@@ -21,6 +21,8 @@
     var geometry, material, mesh;
     var controls;
 
+    var crystals = [];
+
     var shaders = new ShaderLoader('shaders');
 
     shaders.load( 'vs-rainbow' , 'sem' , 'vertex'   );
@@ -35,7 +37,7 @@
 
         scene = new THREE.Scene();
 
-        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000000 );
         camera.position.z = 500;
 
         controls = new THREE.TrackballControls( camera );
@@ -46,25 +48,29 @@
         }
 
         var matcap = THREE.ImageUtils.loadTexture( 'img/rough-aluminium.jpg' );
-
-        var uniforms = {
-
-          t_matcap:{type:"t" , value: matcap }
-
-        }
-
         var vs = shaders.vs.sem;
         var fs = shaders.fs.sem;
 
 
-        for( var i = 0; i < 200; i++ ){
+        for( var i = 0; i < 500; i++ ){
 
 
-          var height = 100 + Math.random() * 200;
-          var width = 10 + Math.random() * 20;
-          var numOf = 60 + Math.floor( Math.random() * 20 );
+          var x = Math.random() * 1.8 *Math.PI;
+          var y = Math.random() * 4. * Math.PI;
+          var z = Math.random()  * 1. *Math.PI;
+          var height = 100 + x * 100;
+
+          var width = 10 + y * 4;
+          var numOf = 20 + Math.floor( z * 20 );
           var e = Math.random() * 10;
           var geometry = CrystalGeometry( height , width , numOf , e  );
+
+          var uniforms = {
+
+            t_matcap:{type:"t" , value: matcap },
+            hovered:{ type:"f" , value:0 }
+
+          }
 
           material = new THREE.ShaderMaterial({
             attributes: attributes,
@@ -75,12 +81,33 @@
 
           mesh = new THREE.Mesh( geometry, material );
 
-          mesh.rotation.x = Math.random() * 2 * Math.PI;
-          mesh.rotation.y = Math.random() * 2 * Math.PI;
-          mesh.rotation.z = Math.random() * 2 * Math.PI;
+          mesh.rotation.x = x;
+          mesh.rotation.y = y;
+          mesh.rotation.z = z; 
+
+          crystals.push( mesh );
           scene.add( mesh );
 
         }
+
+         var uniforms = {
+
+          t_matcap:{type:"t" , value: matcap },
+          hovered:{ type:"f" , value:0 }
+
+        }
+
+        material = new THREE.ShaderMaterial({
+          uniforms:   uniforms,
+          vertexShader: vs,
+          fragmentShader: fs,
+          side: THREE.DoubleSide
+        });
+
+        var geo = new THREE.IcosahedronGeometry(100,2);
+        var bg = new THREE.Mesh( geo , material );
+        scene.add( bg );
+
 
         renderer = new THREE.WebGLRenderer();
         renderer.setSize( window.innerWidth, window.innerHeight );

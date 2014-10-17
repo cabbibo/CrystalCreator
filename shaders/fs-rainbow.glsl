@@ -14,7 +14,7 @@ void main(){
   vec4 nCol =  vec4( vNorm * .5 + .7 , 1. );
 
   vec4 color = nCol * sem + nCol * pow(( 1.-abs(vFR)) , 4. );
-  gl_FragColor = color;// vec4( 1. , 0. , 1. , 1. );// vec4( normalize( vNorm ) , 1. );
+  gl_FragColor =color;// vec4( 1. , 0. , 1. , 1. );// vec4( normalize( vNorm ) , 1. );
 
 }
 
