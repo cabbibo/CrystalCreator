@@ -1,0 +1,107 @@
+<html>
+
+  <style>
+    body{
+      left:0px;
+      top:0px;
+      margin:0px;
+    }
+  </style>
+  <body>
+
+<script src="three.js"></script>
+<script src="jquery.min.js"></script>
+<script src="CrystalGeometry.js"></script>
+<script src="TrackballControls.js"></script>
+<script src="ShaderLoader.js"></script>
+
+<script>
+
+    var scene, camera, renderer;
+    var geometry, material, mesh;
+    var controls;
+
+    var shaders = new ShaderLoader('shaders');
+
+    shaders.load( 'vs-rainbow' , 'sem' , 'vertex'   );
+    shaders.load( 'fs-rainbow' , 'sem' , 'fragment' );
+
+    shaders.shaderSetLoaded = function(){
+      init();
+      animate();
+    }
+
+    function init() {
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+        camera.position.z = 500;
+
+        controls = new THREE.TrackballControls( camera );
+
+        var attributes = {
+          normal:{type:"v3" , value:null }
+
+        }
+
+        var matcap = THREE.ImageUtils.loadTexture( 'img/rough-aluminium.jpg' );
+
+        var uniforms = {
+
+          t_matcap:{type:"t" , value: matcap }
+
+        }
+
+        var vs = shaders.vs.sem;
+        var fs = shaders.fs.sem;
+
+
+        for( var i = 0; i < 200; i++ ){
+
+
+          var height = 100 + Math.random() * 200;
+          var width = 10 + Math.random() * 20;
+          var numOf = 60 + Math.floor( Math.random() * 20 );
+          var e = Math.random() * 10;
+          var geometry = CrystalGeometry( height , width , numOf , e  );
+
+          material = new THREE.ShaderMaterial({
+            attributes: attributes,
+            uniforms:   uniforms,
+            vertexShader: vs,
+            fragmentShader: fs
+          });
+
+          mesh = new THREE.Mesh( geometry, material );
+
+          mesh.rotation.x = Math.random() * 2 * Math.PI;
+          mesh.rotation.y = Math.random() * 2 * Math.PI;
+          mesh.rotation.z = Math.random() * 2 * Math.PI;
+          scene.add( mesh );
+
+        }
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+        document.body.appendChild( renderer.domElement );
+
+    }
+
+    function animate() {
+
+        requestAnimationFrame( animate );
+
+        controls.update();
+       // mesh.rotation.x += 0.01;
+       // mesh.rotation.y += 0.02;
+
+        renderer.render( scene, camera );
+
+    }
+
+  </script>
+
+</body>
+</html>
