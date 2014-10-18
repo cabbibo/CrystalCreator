@@ -63,7 +63,7 @@ function SnowflakeGeometry(){
       id: 0,
       sPos: new THREE.Vector3(),
       length: 300,
-      width:  100,
+      width:  200,
       height: 100,
       extraH: .1,
       vDepth: .05,
@@ -128,8 +128,8 @@ SnowflakeGeometry.prototype.createRecursionArray = function( object , depth  ){
         length: .5 + Math.random(),//.6 + Math.random() *.4,
         width:  .5 + Math.random() ,//.9 + Math.random() *.2 ,
         height: .5 + Math.random() * .7,
-        angle: .1 + Math.random() * 1 ,
-        position: Math.random() * 2 ,
+        angle: .1 + Math.random() * .1*( depth+1) ,
+        position: Math.random() * 3 ,
         children:[]
       }
 
@@ -168,24 +168,24 @@ SnowflakeGeometry.prototype.createBranch = function( info , modifier ){
     var modifiedInfo = {
       id: id,
       sPos: position,
-      length: length,
-      width: width,
-      height: height,
+      length: length*( Math.random()*.1 + 1),
+      width: width*( Math.random()*.1 + 1),
+      height: height*( Math.random()*.1 + 1),
       extraH: info.extraH,
       vDepth: info.vDepth,
-      angle: angle
+      angle: angle +(Math.random() - .5 ) * .1
     }
 
     this.crystalize( 
       modifiedInfo.id, 
       modifiedInfo.sPos , 
-      modifiedInfo.length , 
-      modifiedInfo.width , 
-      modifiedInfo.height, 
-      modifiedInfo.extraH,
-      modifiedInfo.vDepth,
-      modifiedInfo.angle
-    );
+      modifiedInfo.length         , 
+      modifiedInfo.width          , 
+      modifiedInfo.height         , 
+      modifiedInfo.extraH         ,
+      modifiedInfo.vDepth         ,
+      modifiedInfo.angle   
+      );
 
     if( modifier.children.length !== 0 ){
       for( var j = 0; j < modifier.children.length; j++ ){

@@ -46,7 +46,7 @@
 
         scene = new THREE.Scene();
 
-        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000000 );
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 30, 30000 );
         camera.position.z = 4000;
 
         controls = new THREE.TrackballControls( camera );
@@ -76,7 +76,7 @@
 
         var mesh = new THREE.Mesh( geometry, material );
         var mesh2 = new THREE.Mesh( geometry, material );
-        mesh2.rotation.x = Math.PI;
+        mesh2.scale.z = -1;//Math.PI;
         scene.add( mesh );
         scene.add( mesh2 );
 
@@ -97,7 +97,7 @@
        // mesh.rotation.x += 0.01;
        // mesh.rotation.y += 0.02;
 
-       uniforms.filled.value += .01;
+       uniforms.filled.value += .03;
 
         renderer.render( scene, camera );
 
