@@ -22,7 +22,7 @@ void main(){
 
   if( vID + vFade*( 1. + vEdge )> filled ){
 
-    color = vec4( 0. );
+    color.w =  0. ;
 
   }
 
