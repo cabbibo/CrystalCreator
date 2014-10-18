@@ -68,8 +68,10 @@
         var geometry = new SnowflakeGeometry();
 
         var mesh = new THREE.Mesh( geometry, material );
-
+        var mesh2 = new THREE.Mesh( geometry, material );
+        mesh2.rotation.x = Math.PI;
         scene.add( mesh );
+        scene.add( mesh2 );
 
         renderer = new THREE.WebGLRenderer();
         renderer.setSize( window.innerWidth, window.innerHeight );
