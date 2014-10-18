@@ -45,7 +45,10 @@
 
         var matcap = THREE.ImageUtils.loadTexture( '/img/rough-aluminium.jpg' );
         var attributes = {
-          normal:{type:"v3" , value:null }
+          normal:{type:"v3" , value:null },
+          fade: { type:"f" , value:null },
+          edge: { type:"f" , value:null },
+          id: { type:"f" , value:null }
         }
         
         var uniforms = {

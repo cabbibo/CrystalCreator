@@ -127,7 +127,7 @@ SnowflakeGeometry.prototype.createRecursionArray = function( object , depth  ){
       var o ={ 
         length: .5 + Math.random(),//.6 + Math.random() *.4,
         width:  .5 + Math.random() ,//.9 + Math.random() *.2 ,
-        height: .7,
+        height: .5 + Math.random(),
         angle: .1 + Math.random() * 1 ,
         position: Math.random() * 2 ,
         children:[]
@@ -141,61 +141,6 @@ SnowflakeGeometry.prototype.createRecursionArray = function( object , depth  ){
   }
 
 }
-
-/*SnowflakeGeometry.prototype.createRecursionArray = function(){
-
-  var array = [];
-
-  var guide = {
-    length: .8,
-    width: .5,
-    height: .7,
-    angle: .5,
-    position: .5,
-    children:[
-      {
-        length: .8,
-        width: .5,
-        height: .7,
-        angle: .5,
-        position: .9,
-        children:[
-        ]
-      },
-      {
-        length: .8,
-        width: .5,
-        height: .7,
-        angle: .5,
-        position: .3,
-        children:[
-              {
-            length: .8,
-            width: .5,
-            height: .7,
-            angle: .5,
-            position: .9,
-            children:[
-            ]
-          },
-          {
-            length: .8,
-            width: .5,
-            height: .7,
-            angle: .5,
-            position: .3,
-            children:[
-            ]
-          },
-        ]
-      },
-    ]
-  };
-
-
-  return guide;
-
-}*/
 
 
 SnowflakeGeometry.prototype.createBranch = function( info , modifier ){
@@ -408,11 +353,11 @@ SnowflakeGeometry.prototype.createGeometry = function(){
       ids[ fID + 1 ] = b.id;
       ids[ fID + 2 ] = b.id;
 
-      edges[ fID + 0 ] = b.edges[j][2];
+      edges[ fID + 0 ] = b.edges[j][0];
       edges[ fID + 1 ] = b.edges[j][1];
       edges[ fID + 2 ] = b.edges[j][2];
 
-      fades[ fID + 0 ] = b.fades[j][2];
+      fades[ fID + 0 ] = b.fades[j][0];
       fades[ fID + 1 ] = b.fades[j][1];
       fades[ fID + 2 ] = b.fades[j][2];
 
@@ -555,20 +500,20 @@ SnowflakeGeometry.prototype.crystalize = function(
   var n = this.makeNormal( p[3] , p[6] , p[5] );
   norms.push([ n , n , n ]); 
   faces.push([ p[3], p[6], p[5] ]); 
-  edges.push([ 1 , 1 , 0 ]);
+  edges.push([ 1 , 0 , 1 ]);
   fades.push([  0 , 1-v , 1  ]);
   
   var n = this.makeNormal( p[5] , p[6] , p[7] );
   norms.push([ n , n , n ]); 
   faces.push([ p[5], p[6], p[7] ]);
   edges.push([ 1 , 0 , 1 ]);
-  fades.push([  0 , 1-v , 1+h  ]);
+  fades.push([  1 , 1-v , 1+h  ]);
 
   var n = this.makeNormal( p[7] , p[6] , p[4] );
   norms.push([ n , n , n ]); 
   faces.push([ p[7], p[6], p[4] ]); 
   edges.push([ 1 , 0 , 1 ]);
-  fades.push([  1+h , 1-v , 0  ]);
+  fades.push([  1+h , 1-v , 1  ]);
 
   var branch = {
   
