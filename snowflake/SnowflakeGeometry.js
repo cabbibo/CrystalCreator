@@ -127,7 +127,7 @@ SnowflakeGeometry.prototype.createRecursionArray = function( object , depth  ){
       var o ={ 
         length: .5 + Math.random(),//.6 + Math.random() *.4,
         width:  .5 + Math.random() ,//.9 + Math.random() *.2 ,
-        height: .5 + Math.random(),
+        height: .5 + Math.random() * .7,
         angle: .1 + Math.random() * 1 ,
         position: Math.random() * 2 ,
         children:[]

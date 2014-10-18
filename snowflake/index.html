@@ -34,6 +34,14 @@
       animate();
     }
 
+
+    var matcap = THREE.ImageUtils.loadTexture( '../img/rough-aluminium.jpg' );
+    var uniforms = {
+      t_matcap:{type:"t" , value:matcap},
+      filled:{type:"f" , value:0}
+    }
+
+
     function init() {
 
         scene = new THREE.Scene();
@@ -43,18 +51,12 @@
 
         controls = new THREE.TrackballControls( camera );
 
-        var matcap = THREE.ImageUtils.loadTexture( '../img/rough-aluminium.jpg' );
         var attributes = {
           normal:{type:"v3" , value:null },
           fade: { type:"f" , value:null },
           edge: { type:"f" , value:null },
           id: { type:"f" , value:null }
         }
-        
-        var uniforms = {
-          t_matcap:{type:"t" , value:matcap}
-        }
-
         var vs = shaders.vs.snow;
         var fs = shaders.fs.snow;
     
@@ -92,6 +94,8 @@
         controls.update();
        // mesh.rotation.x += 0.01;
        // mesh.rotation.y += 0.02;
+
+       uniforms.filled.value += .01;
 
         renderer.render( scene, camera );
 
