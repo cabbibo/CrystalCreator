@@ -9,11 +9,12 @@
   </style>
   <body>
 
-<script src="three.js"></script>
-<script src="jquery.min.js"></script>
+<script src="/lib/three.js"></script>
+<script src="/lib/jquery.min.js"></script>
+<script src="/lib/TrackballControls.js"></script>
+<script src="/lib/ShaderLoader.js"></script>
+
 <script src="CrystalGeometry.js"></script>
-<script src="TrackballControls.js"></script>
-<script src="ShaderLoader.js"></script>
 
 <script>
 
@@ -23,7 +24,7 @@
 
     var crystals = [];
 
-    var shaders = new ShaderLoader('shaders');
+    var shaders = new ShaderLoader('/shaders');
 
     shaders.load( 'vs-rainbow' , 'sem' , 'vertex'   );
     shaders.load( 'fs-rainbow' , 'sem' , 'fragment' );
@@ -47,7 +48,7 @@
 
         }
 
-        var matcap = THREE.ImageUtils.loadTexture( 'img/rough-aluminium.jpg' );
+        var matcap = THREE.ImageUtils.loadTexture( '/img/rough-aluminium.jpg' );
         var vs = shaders.vs.sem;
         var fs = shaders.fs.sem;
 
@@ -114,8 +115,11 @@
 
         
 
+
         renderer = new THREE.WebGLRenderer();
         renderer.setSize( window.innerWidth, window.innerHeight );
+       
+        window.addEventListener( 'resize', onWindowResize , false );
 
         document.body.appendChild( renderer.domElement );
 
@@ -133,6 +137,22 @@
 
     }
 
+      // Resets the renderer to be the proper size
+  function onWindowResize(){
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+   
+    var dpr = devicePixelRatio || 1;
+
+    //camUniforms.SS.value.x = window.innerWidth * dpr;
+    //camUniforms.SS.value.y = window.innerHeight * dpr;
+
+
+  }
   </script>
 
 </body>
