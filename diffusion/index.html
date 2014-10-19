@@ -1,0 +1,180 @@
+<html>
+
+  <style>
+    body{
+      left:0px;
+      top:0px;
+      margin:0px;
+    }
+  </style>
+  <body>
+
+<script src="../lib/three.js"></script>
+<script src="../lib/jquery.min.js"></script>
+<script src="../lib/TrackballControls.js"></script>
+<script src="../lib/ShaderLoader.js"></script>
+<script src="../lib/PhysicsRenderer.js"></script>
+
+<script>
+
+    var scene, camera, renderer;
+    var geometry, material, mesh;
+    var controls;
+
+    var crystals = [];
+
+    var loaded = 0;
+    var neededToLoad = 2;
+
+    var shaders = new ShaderLoader('../shaders');
+
+    shaders.load( 'fs-diffusion' , 'diffusion' , 'fragment' );
+    shaders.load( 'vs-diffusion' , 'diffusion' , 'vertex' );
+    shaders.load( 'ss-diffusion' , 'diffusion' , 'simulation' );
+
+    shaders.shaderSetLoaded = function(){
+
+      onLoad();
+    }
+
+    t_og = THREE.ImageUtils.loadTexture( '../img/box.png' , THREE.UVMapping, function(){
+      onLoad();
+    });
+
+    var uniforms = {
+  
+      t_og:{ type:"t" , value: t_og }, 
+      time:{ type:"f" , value:0 } ,
+      dT:{ type:"f" , value:0 } 
+
+    }
+
+     var u ={
+      t_crystal: { type:"t" , value:t_og }
+    }
+
+    function init() {
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
+        camera.position.z = 200;
+
+        controls = new THREE.TrackballControls( camera );
+
+
+        clock = new THREE.Clock();
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+
+        
+        var size = 1024;
+        var ss = shaders.setValue( shaders.ss.diffusion , 'SIZE' , 1./size );
+
+
+        crystalSim = new PhysicsRenderer( size , ss , renderer );
+        crystalSim.setUniform( 't_og' , uniforms.t_og  );
+        crystalSim.setUniform( 'time' , uniforms.time  );
+        crystalSim.reset( t_og );
+       // crystalSim.debug( scene );
+
+        var mat = new THREE.ShaderMaterial({
+
+          uniforms:  u,
+          vertexShader: shaders.vs.diffusion,
+          fragmentShader: shaders.fs.diffusion
+
+        });
+
+        var geo = createGeo( size );
+        var plane = new THREE.PointCloud(
+          geo,
+          mat
+        );
+
+        crystalSim.addBoundTexture( plane , 't_crystal' , 'output' );
+       
+        scene.add( plane );
+       
+        window.addEventListener( 'resize', onWindowResize , false );
+
+        document.body.appendChild( renderer.domElement );
+
+    }
+
+    function animate() {
+
+      requestAnimationFrame( animate );
+      uniforms.dT.value = clock.getDelta();
+      uniforms.time.value += uniforms.dT.value;
+      crystalSim.update();
+
+      controls.update();
+       // mesh.rotation.x += 0.01;
+       // mesh.rotation.y += 0.02;
+
+      renderer.render( scene, camera );
+
+    }
+
+      // Resets the renderer to be the proper size
+    function onWindowResize(){
+
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+
+
+
+      renderer.setSize( window.innerWidth, window.innerHeight );
+     
+      var dpr = devicePixelRatio || 1;
+
+      //camUniforms.SS.value.x = window.innerWidth * dpr;
+      //camUniforms.SS.value.y = window.innerHeight * dpr;
+
+
+    }
+
+    function createGeo(size ){
+
+      s2 = size * size;
+      var positions = new Float32Array( s2 * 3 );
+      //var displacment = new Float32Array[ s2 ];
+
+
+      var geo = new THREE.BufferGeometry();
+      var aPos = new THREE.BufferAttribute( positions , 3 );
+      geo.addAttribute( 'position', aPos ); 
+      
+      for( var i =0; i < size; i++ ){
+        for( var j = 0; j < size; j++ ){
+        
+          var id = i * size + j;
+          positions[ id * 3 + 0 ] = i / size;
+          positions[ id * 3 + 1 ] = j / size;
+          positions[ id * 3 + 2 ] = 0;
+
+
+        }
+      }
+
+      return geo; 
+
+    }
+
+    function onLoad(){
+
+      loaded ++;
+      if( loaded == neededToLoad ){
+
+        init();
+        animate();
+
+      }
+
+    }
+  </script>
+
+</body>
+</html>

@@ -9,10 +9,10 @@
   </style>
   <body>
 
-<script src="/lib/three.js"></script>
-<script src="/lib/jquery.min.js"></script>
-<script src="/lib/TrackballControls.js"></script>
-<script src="/lib/ShaderLoader.js"></script>
+<script src="../lib/three.js"></script>
+<script src="../lib/jquery.min.js"></script>
+<script src="../lib/TrackballControls.js"></script>
+<script src="../lib/ShaderLoader.js"></script>
 
 <script src="SnowflakeGeometry.js"></script>
 
@@ -24,7 +24,7 @@
 
     var crystals = [];
 
-    var shaders = new ShaderLoader('/shaders');
+    var shaders = new ShaderLoader('../shaders');
 
     shaders.load( 'vs-snow' , 'snow' , 'vertex'   );
     shaders.load( 'fs-snow' , 'snow' , 'fragment' );
@@ -43,7 +43,7 @@
 
         controls = new THREE.TrackballControls( camera );
 
-        var matcap = THREE.ImageUtils.loadTexture( '/img/rough-aluminium.jpg' );
+        var matcap = THREE.ImageUtils.loadTexture( '../img/rough-aluminium.jpg' );
         var attributes = {
           normal:{type:"v3" , value:null }
         }
