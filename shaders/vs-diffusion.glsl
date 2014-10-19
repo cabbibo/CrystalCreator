@@ -16,6 +16,10 @@ varying vec3 vLight;
 varying float vFR;
 varying vec3 vEye;
 
+varying mat3 vNormMat;
+
+varying float vSize;
+
 const float size = @SIZE;
 
 $semLookup
@@ -24,6 +28,7 @@ $normalFromDepth
 
 void main(){
 
+  vSize = size;
   //vNorm = normalize( (position - position1) + (position2 - position1) );
 
  // vNorm = normalize( cross( (position - position1) , (position2 - position1) ));
@@ -41,9 +46,10 @@ void main(){
   vec3 pos1 = position1.xyz + vec3( -.5 , -.5 , depth * d1.r );
   vec3 pos2 = position2.xyz + vec3( -.5 , -.5 , depth * d2.r );
   
-  
   vNorm =normalMatrix * normalFromDepth( t_crystal , position.xy , depth , size*2. );
   //vNorm =  normalize(normalMatrix * normalize( cross( (pos - pos1) , (pos2 - pos1) )));
+
+  vNormMat = normalMatrix;
 
   vec4 mPos = modelMatrix * vec4( pos * 50., 1.0 );
 
