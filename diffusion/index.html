@@ -18,6 +18,7 @@
 <script src="../lib/AudioController.js"       ></script>
 <script src="../lib/AudioTexture.js"          ></script>
 <script src="../lib/ObjectControls.js"        ></script>
+<script src="../lib/NormalMapper.js"          ></script>
 
 <script>
 
@@ -32,8 +33,14 @@
 
     var shaders = new ShaderLoader('../shaders');
 
+    shaders.load( 'fs-normalMap' , 'normalMap' , 'fragment' );
+   
+    shaders.load( 'fs-output' , 'output' , 'fragment' );
+    shaders.load( 'vs-output' , 'output' , 'vertex' );
+    
     shaders.load( 'fs-diffusion' , 'diffusion' , 'fragment' );
     shaders.load( 'vs-diffusion' , 'diffusion' , 'vertex' );
+    
     shaders.load( 'ss-diffusion3' , 'diffusion' , 'simulation' );
 
     shaders.shaderSetLoaded = function(){
@@ -110,7 +117,7 @@
         crystalSim.setUniform( 'time' , uniforms.time  );
         crystalSim.setUniform( 'dT' , uniforms.dT  );
         crystalSim.reset( t_og );
-       // crystalSim.debug( scene );
+        //crystalSim.debug( scene );
 
         var u ={
           t_crystal: { type:"t" , value:t_og },
@@ -146,15 +153,21 @@
         var plane = new THREE.Mesh(
           geo,
           mat
-          );
+        );
 
-          plane.frustumCulled = false;
+        plane.frustumCulled = false;
+        
+            crystalSim.addBoundTexture( plane , 't_crystal' , 'output' );
+       
+        scene.add( plane );
+
+
 
 
         intersectPlane = new THREE.Mesh(
           new THREE.PlaneGeometry( 1000000 , 1000000 ),
           new THREE.MeshNormalMaterial()
-          );
+        );
 
         intersectPlane.intersectedUpdate = function(oc){
 
@@ -175,17 +188,33 @@
         scene.add( intersectMesh );
 
 
+        normalMapper = new NormalMapper( 1024 , shaders.fs.normalMap , renderer );
 
-        intersectPlane.position.z = 10;
+
+        normalPlane = new THREE.Mesh(
+          new THREE.PlaneGeometry( 100 , 100 , 50,50),
+          new THREE.ShaderMaterial({
+            uniforms:{
+              t_normal: { type:"t" , value: normalMapper.output },
+              lightPos: uniforms.lightPos
+            },
+            vertexShader: shaders.vs.output,
+            fragmentShader: shaders.fs.output,
+            //transparent: true
+          })
+        );
+
+
+        normalPlane.position.z = 0;
+        //scene.add( normalPlane );
+
+
+        intersectPlane.position.z = 2;
 
 
        // scene.add( intersectPlane );
 
 
-
-        crystalSim.addBoundTexture( plane , 't_crystal' , 'output' );
-       
-        scene.add( plane );
         //source.mediaElement.play();
 
        
@@ -207,10 +236,13 @@
       
       uniforms.dT.value = clock.getDelta();
       uniforms.time.value += uniforms.dT.value;
+      
+      
+      crystalSim.update();
+      normalMapper.createNormalMap( this.crystalSim.output , .01 , 1 / 1024 );
 
-
+   
    //   if( tick % 10 == 0 ){
-        crystalSim.update();
     //  }
 
       controls.update();
@@ -232,6 +264,9 @@
       renderer.setSize( window.innerWidth, window.innerHeight );
      
       var dpr = devicePixelRatio || 1;
+
+
+
 
       //camUniforms.SS.value.x = window.innerWidth * dpr;
       //camUniforms.SS.value.y = window.innerHeight * dpr;

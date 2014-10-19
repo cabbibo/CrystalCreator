@@ -30,7 +30,7 @@ void main(){
   vec4 r = texture2D( t_rainbow , vec2( abs(sin(pow((1.-vFR),10.)*300.)) , 0. ) );
 
   float lamb = max(0. ,dot( -vLight ,  vNorm ) );
-  vec3 refl = reflect( -vLight , vNorm );
+  vec3 refl = normalize(reflect( -vLight , vNorm ));
 
   float rFR =  max(0. ,dot( vEye,  refl ) );
 
@@ -43,7 +43,8 @@ void main(){
   vec3 norm = vNormMat *  normalFromDepth( t_crystal , vUv , depth , vSize*1.1 );
 
 
-  gl_FragColor = vec4( norm ,  vDis*5.);
+  gl_FragColor = vec4( pow(rFR ,3. ) * (norm * .5 + .8 ) + pow( (1.- rFR) ,3. ) *m.xyz  , vDis *10. );
+
   //gl_FragColor = vec4( col ,  vDis*5.);
 }
 
