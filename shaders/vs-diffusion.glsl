@@ -4,13 +4,18 @@ attribute vec3 position2;
 
 uniform sampler2D t_crystal;
 uniform float depth;
+uniform vec3 lightPos;
+
 varying vec2 vUv;
 varying vec3 vNorm;
 
 varying vec2 vSEM;
 varying float vDis;
 
+varying vec3 vLight;
 varying float vFR;
+varying vec3 vEye;
+
 const float size = @SIZE;
 
 $semLookup
@@ -40,9 +45,12 @@ void main(){
   vNorm =normalMatrix * normalFromDepth( t_crystal , position.xy , depth , size*2. );
   //vNorm =  normalize(normalMatrix * normalize( cross( (pos - pos1) , (pos2 - pos1) )));
 
+  vec4 mPos = modelMatrix * vec4( pos * 50., 1.0 );
+
+  vLight = normalize( mPos.xyz - lightPos );
   vec4 mvPos = modelViewMatrix * vec4( pos * 50., 1.0 );
   
-  vec3 vEye = normalize( mvPos.xyz );
+  vEye = normalize( mvPos.xyz );
 
   vFR = max( 0. ,dot(-vEye , vNorm ) );
 

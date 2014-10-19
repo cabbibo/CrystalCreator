@@ -9,11 +9,15 @@
   </style>
   <body>
 
-<script src="../lib/three.js"></script>
-<script src="../lib/jquery.min.js"></script>
-<script src="../lib/TrackballControls.js"></script>
-<script src="../lib/ShaderLoader.js"></script>
-<script src="../lib/PhysicsRenderer.js"></script>
+<script src="../lib/three.js"                 ></script>
+<script src="../lib/jquery.min.js"            ></script>
+<script src="../lib/TrackballControls.js"     ></script>
+<script src="../lib/ShaderLoader.js"          ></script>
+<script src="../lib/PhysicsRenderer.js"       ></script>
+<script src="../lib/Stream.js"                ></script>
+<script src="../lib/AudioController.js"       ></script>
+<script src="../lib/AudioTexture.js"          ></script>
+<script src="../lib/ObjectControls.js"        ></script>
 
 <script>
 
@@ -37,6 +41,7 @@
       onLoad();
     }
 
+    var mouse = [0,0];
 
     var l = THREE.ImageUtils.loadTexture;
     var m = THREE.UVMapping;
@@ -45,28 +50,47 @@
     }
 
 
-    t_og      = l( '../img/tweet.png'            , m , c );
+    t_og      = l( '../img/logo.png'            , m , c );
     t_matcap  = l( '../img/rough-aluminium.jpg' , m , c );
     t_rainbow = l( '../img/rainbow.png'         , m , c );
-    t_block   = l( '../img/block.png'           , m , c );
+    t_block   = l( '../img/logo.png'            , m , c );
 
+    var audioController = new AudioController();
 
     var uniforms = {
   
       t_og:{ type:"t" , value: t_og }, 
-      t_block:{ type:"t" , value: t_block }, 
+      t_block:{ type:"t" , value: t_block },
+      t_audio : { type:"t" , value: audioController.texture     },
       time:{ type:"f" , value:0 } ,
-      dT:{ type:"f" , value:0 } 
+      dT:{ type:"f" , value:0 },
+      lightPos:{ type:"v3" , value:new THREE.Vector3()}
 
     }
+
+    var tick = 0;
+
+    var audio = new Audio(),
+    
+    // `stream_url` you'd get from 
+    // requesting http://api.soundcloud.com/tracks/6981096.json
+    url = 'http://api.soundcloud.com/tracks/41923072/stream' +
+          '?client_id=2400df97862fa2c06f486af524e4f974';
+
+    audio.src = url;
+
+    var source = audioController.ctx.createMediaElementSource(audio);
+    source.connect(audioController.gain);
+
 
     function init() {
 
         scene = new THREE.Scene();
 
         camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
-        camera.position.z = 20;
+        camera.position.z = 50;
 
+        objectControls = new ObjectControls( camera );
         controls = new THREE.TrackballControls( camera );
 
 
@@ -84,6 +108,7 @@
         crystalSim.setUniform( 't_og' , uniforms.t_og  );
         crystalSim.setUniform( 't_block' , uniforms.t_block  );
         crystalSim.setUniform( 'time' , uniforms.time  );
+        crystalSim.setUniform( 'dT' , uniforms.dT  );
         crystalSim.reset( t_og );
        // crystalSim.debug( scene );
 
@@ -92,7 +117,9 @@
           t_matcap: { type:"t" , value:t_matcap },
           t_rainbow: { type:"t" , value:t_rainbow },
           depth: { type:"f" , value: .01 },
-          t_og: uniforms.t_og
+          t_og: uniforms.t_og,
+          t_audio: uniforms.t_audio,
+          lightPos: uniforms.lightPos
         }
 
 
@@ -115,7 +142,7 @@
 
         });
 
-        var geo = createGeo( size );
+        var geo = createGeo( size /2 );
         var plane = new THREE.Mesh(
           geo,
           mat
@@ -123,9 +150,44 @@
 
           plane.frustumCulled = false;
 
+
+        intersectPlane = new THREE.Mesh(
+          new THREE.PlaneGeometry( 1000000 , 1000000 ),
+          new THREE.MeshNormalMaterial()
+          );
+
+        intersectPlane.intersectedUpdate = function(oc){
+
+          var p = oc.getPoint( this );
+          intersectMesh.position.copy( p );
+          uniforms.lightPos.value.copy( p );
+          //console.log( this );
+
+        }
+
+        intersectMesh = new THREE.Mesh( 
+          new THREE.IcosahedronGeometry( .3 , 1 ),
+          new THREE.MeshNormalMaterial()
+        );
+
+
+        objectControls.add( intersectPlane );
+        scene.add( intersectMesh );
+
+
+
+        intersectPlane.position.z = 10;
+
+
+       // scene.add( intersectPlane );
+
+
+
         crystalSim.addBoundTexture( plane , 't_crystal' , 'output' );
        
         scene.add( plane );
+        //source.mediaElement.play();
+
        
         window.addEventListener( 'resize', onWindowResize , false );
 
@@ -135,10 +197,21 @@
 
     function animate() {
 
+      tick ++;
+
       requestAnimationFrame( animate );
+
+
+      objectControls.update();
+      audioController.update();
+      
       uniforms.dT.value = clock.getDelta();
       uniforms.time.value += uniforms.dT.value;
-      crystalSim.update();
+
+
+   //   if( tick % 10 == 0 ){
+        crystalSim.update();
+    //  }
 
       controls.update();
        // mesh.rotation.x += 0.01;
@@ -165,6 +238,9 @@
 
 
     }
+
+
+
 
     function createGeo(size ){
 

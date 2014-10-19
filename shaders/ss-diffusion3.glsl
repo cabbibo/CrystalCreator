@@ -8,6 +8,7 @@ uniform sampler2D t_og;
 uniform sampler2D t_block;
 
 uniform float time;
+uniform float dT;
 uniform sampler2D t_audio;
 
 varying vec2 vUv;
@@ -86,9 +87,10 @@ void main(){
   //pos.a += .002; //*  rand( vUv * (time+1.) * 1000. );
 
 
-  float noise = abs(snoise( vUv* 1. + vec2( sin( time * 100000. ) , cos( time * 10000.)) ));
+  //float noise = abs(snoise( vUv* (1. + vec2( sin( time * 10. ) , cos( time * 1.)) ))*0.);
+  float noise = abs(snoise( vUv*2. + vec2( sin( time*.3 ) ,cos( time*.4 ) )));
 //  pos.a += .01 *noise; //*  rand( vUv * (time+1.) * 1000. );
-  pos.a += .01 *(.2 + .8 * noise); //*  rand( vUv * (time+1.) * 1000. );
+  pos.a += .02 * ( noise)* ( noise); //*  rand( vUv * (time+1.) * 1000. );
 
    
   if( block.r < .5 && pos.a < 2.){
@@ -134,7 +136,7 @@ void main(){
 
     }else{
 
-      if( pos.g < 1.5 && pos.a < 1.8 ){
+      if( pos.g < 1.5 && pos.a < 2.4 ){
         if( 
           dif[0] < .1 &&
           dif[1] < .1 &&
