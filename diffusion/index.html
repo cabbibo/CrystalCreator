@@ -24,33 +24,40 @@
     var crystals = [];
 
     var loaded = 0;
-    var neededToLoad = 2;
+    var neededToLoad = 5;
 
     var shaders = new ShaderLoader('../shaders');
 
     shaders.load( 'fs-diffusion' , 'diffusion' , 'fragment' );
     shaders.load( 'vs-diffusion' , 'diffusion' , 'vertex' );
-    shaders.load( 'ss-diffusion' , 'diffusion' , 'simulation' );
+    shaders.load( 'ss-diffusion3' , 'diffusion' , 'simulation' );
 
     shaders.shaderSetLoaded = function(){
 
       onLoad();
     }
 
-    t_og = THREE.ImageUtils.loadTexture( '../img/box.png' , THREE.UVMapping, function(){
+
+    var l = THREE.ImageUtils.loadTexture;
+    var m = THREE.UVMapping;
+    var c = function(){
       onLoad();
-    });
+    }
+
+
+    t_og      = l( '../img/tweet.png'            , m , c );
+    t_matcap  = l( '../img/rough-aluminium.jpg' , m , c );
+    t_rainbow = l( '../img/rainbow.png'         , m , c );
+    t_block   = l( '../img/block.png'           , m , c );
+
 
     var uniforms = {
   
       t_og:{ type:"t" , value: t_og }, 
+      t_block:{ type:"t" , value: t_block }, 
       time:{ type:"f" , value:0 } ,
       dT:{ type:"f" , value:0 } 
 
-    }
-
-     var u ={
-      t_crystal: { type:"t" , value:t_og }
     }
 
     function init() {
@@ -58,7 +65,7 @@
         scene = new THREE.Scene();
 
         camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
-        camera.position.z = 200;
+        camera.position.z = 20;
 
         controls = new THREE.TrackballControls( camera );
 
@@ -75,23 +82,46 @@
 
         crystalSim = new PhysicsRenderer( size , ss , renderer );
         crystalSim.setUniform( 't_og' , uniforms.t_og  );
+        crystalSim.setUniform( 't_block' , uniforms.t_block  );
         crystalSim.setUniform( 'time' , uniforms.time  );
         crystalSim.reset( t_og );
        // crystalSim.debug( scene );
 
+        var u ={
+          t_crystal: { type:"t" , value:t_og },
+          t_matcap: { type:"t" , value:t_matcap },
+          t_rainbow: { type:"t" , value:t_rainbow },
+          depth: { type:"f" , value: .01 },
+          t_og: uniforms.t_og
+        }
+
+
+        var a = {
+          position1:{type:"v3" , value:null},
+          position2:{type:"v3" , value:null},
+        }
+
+
+        var vs = shaders.setValue( shaders.vs.diffusion , 'SIZE' , 1./size );
+        
         var mat = new THREE.ShaderMaterial({
 
           uniforms:  u,
-          vertexShader: shaders.vs.diffusion,
-          fragmentShader: shaders.fs.diffusion
+          attributes: a,
+          vertexShader:  vs,
+          fragmentShader: shaders.fs.diffusion,
+          side: THREE.DoubleSide,
+          transparent: true,
 
         });
 
         var geo = createGeo( size );
-        var plane = new THREE.PointCloud(
+        var plane = new THREE.Mesh(
           geo,
           mat
-        );
+          );
+
+          plane.frustumCulled = false;
 
         crystalSim.addBoundTexture( plane , 't_crystal' , 'output' );
        
@@ -139,21 +169,111 @@
     function createGeo(size ){
 
       s2 = size * size;
-      var positions = new Float32Array( s2 * 3 );
+      var positions = new Float32Array( s2 * 3 * 6 );
+      var positions1 = new Float32Array( s2 * 3 * 6 );
+      var positions2 = new Float32Array( s2 * 3 * 6 );
       //var displacment = new Float32Array[ s2 ];
 
 
       var geo = new THREE.BufferGeometry();
       var aPos = new THREE.BufferAttribute( positions , 3 );
-      geo.addAttribute( 'position', aPos ); 
+      var aPos1 = new THREE.BufferAttribute( positions1 , 3 );
+      var aPos2 = new THREE.BufferAttribute( positions2 , 3 );
+      
+      geo.addAttribute( 'position' , aPos ); 
+      geo.addAttribute( 'position1', aPos1 ); 
+      geo.addAttribute( 'position2', aPos2 ); 
       
       for( var i =0; i < size; i++ ){
         for( var j = 0; j < size; j++ ){
-        
+
+
+          var lu  = [ i / (size+1) , j / (size+1) ];
+          var ru  = [ (i+1) / (size+1) , j / (size+1) ];
+          var rd  = [ (i+1) / (size+1) , (j+1) / (size+1) ];
+          var ld  = [ i / (size+1) , (j+1) / (size+1) ];
+
+          
           var id = i * size + j;
-          positions[ id * 3 + 0 ] = i / size;
-          positions[ id * 3 + 1 ] = j / size;
-          positions[ id * 3 + 2 ] = 0;
+
+
+          // Triangle 1
+          positions[ id * 3 * 6 + 0 ] = lu[0]; 
+          positions[ id * 3 * 6 + 1 ] = lu[1]; 
+          positions[ id * 3 * 6 + 2 ] = 0;
+
+          positions[ id * 3 * 6 + 3 ] = ld[0]; 
+          positions[ id * 3 * 6 + 4 ] = ld[1]; 
+          positions[ id * 3 * 6 + 5 ] = 0;
+
+          positions[ id * 3 * 6 + 6 ] = ru[0]; 
+          positions[ id * 3 * 6 + 7 ] = ru[1]; 
+          positions[ id * 3 * 6 + 8 ] = 0;
+
+
+          positions1[ id * 3 * 6 + 0 ] = ld[0]; 
+          positions1[ id * 3 * 6 + 1 ] = ld[1]; 
+          positions1[ id * 3 * 6 + 2 ] = 0;
+
+          positions1[ id * 3 * 6 + 3 ] = ru[0]; 
+          positions1[ id * 3 * 6 + 4 ] = ru[1]; 
+          positions1[ id * 3 * 6 + 5 ] = 0;
+
+          positions1[ id * 3 * 6 + 6 ] = lu[0]; 
+          positions1[ id * 3 * 6 + 7 ] = lu[1]; 
+          positions1[ id * 3 * 6 + 8 ] = 0;
+
+          positions2[ id * 3 * 6 + 0 ] = ru[0]; 
+          positions2[ id * 3 * 6 + 1 ] = ru[1]; 
+          positions2[ id * 3 * 6 + 2 ] = 0;
+
+          positions2[ id * 3 * 6 + 3 ] = lu[0]; 
+          positions2[ id * 3 * 6 + 4 ] = lu[1]; 
+          positions2[ id * 3 * 6 + 5 ] = 0;
+
+          positions2[ id * 3 * 6 + 6 ] = ld[0]; 
+          positions2[ id * 3 * 6 + 7 ] = ld[1]; 
+          positions2[ id * 3 * 6 + 8 ] = 0;
+
+
+          // Triangle 2
+          positions[ id * 3 * 6 + 9  ] = ld[0]; 
+          positions[ id * 3 * 6 + 10 ] = ld[1]; 
+          positions[ id * 3 * 6 + 11 ] = 0;
+
+          positions[ id * 3 * 6 + 12 ] = rd[0]; 
+          positions[ id * 3 * 6 + 13 ] = rd[1]; 
+          positions[ id * 3 * 6 + 14 ] = 0;
+
+          positions[ id * 3 * 6 + 15 ] = ru[0]; 
+          positions[ id * 3 * 6 + 16 ] = ru[1]; 
+          positions[ id * 3 * 6 + 17 ] = 0;
+
+
+          positions1[ id * 3 * 6 + 9  ] = rd[0]; 
+          positions1[ id * 3 * 6 + 10 ] = rd[1]; 
+          positions1[ id * 3 * 6 + 11 ] = 0;
+
+          positions1[ id * 3 * 6 + 12 ] = ru[0]; 
+          positions1[ id * 3 * 6 + 13 ] = ru[1]; 
+          positions1[ id * 3 * 6 + 14 ] = 0;
+
+          positions1[ id * 3 * 6 + 15 ] = ld[0]; 
+          positions1[ id * 3 * 6 + 16 ] = ld[1]; 
+          positions1[ id * 3 * 6 + 17 ] = 0;
+
+
+          positions2[ id * 3 * 6 + 9  ] = ru[0]; 
+          positions2[ id * 3 * 6 + 10 ] = ru[1]; 
+          positions2[ id * 3 * 6 + 11 ] = 0;
+
+          positions2[ id * 3 * 6 + 12 ] = ld[0]; 
+          positions2[ id * 3 * 6 + 13 ] = ld[1]; 
+          positions2[ id * 3 * 6 + 14 ] = 0;
+
+          positions2[ id * 3 * 6 + 15 ] = rd[0]; 
+          positions2[ id * 3 * 6 + 16 ] = rd[1]; 
+          positions2[ id * 3 * 6 + 17 ] = 0;
 
 
         }

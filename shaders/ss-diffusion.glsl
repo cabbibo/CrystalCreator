@@ -46,10 +46,53 @@ void main(){
 
       pos += vec4( (l.r) * 1. , 0. , 0. , 0. );
 
-   
-    //}else{
+
+    }else{
+
+      float l = texture2D( t_pos , vUv + vec2( -size , 0.  ) ).r;
+      float r = texture2D( t_pos , vUv + vec2( size , 0.  ) ).r;
+      float u = texture2D( t_pos , vUv + vec2( 0. , -size  ) ).r;
+      float d = texture2D( t_pos , vUv + vec2( 0. , size  ) ).r;
+
+      float dL = abs((pos.r - l));
+      float dR = abs((pos.r - r));
+      float dU = abs((pos.r - u));
+      float dD = abs((pos.r - d));
+
+     /* if( dL > .0000000000001 ||  dR > .00000000001 ||  dU > .00000000000001 ||  dD > .000000000000001 ){
+
+      
+      }else{
+
+         if( pos.r < 3. ){
+          pos.r += .1;// += vec4( .3 , 0. , 0. , 0. );
+        }
 
 
+      }*/
+
+      if( pos.r < 1.4 ){
+        if( dL < .011 ){
+           pos.r += .01;
+        }
+        if( dR < .011 ){
+           pos.r += .01;
+        }
+        if( dU < .011 ){
+           pos.r += .01;
+        }
+        if( dD < .011 ){
+           pos.r += .01;
+        }
+      }
+
+/*      if( dL < 0.1 &&  dR  < 0.2 && dU  < 0.2  && dD  < 0.2 ){
+
+        if( pos.r < 1.4 ){
+          pos.r += .1;
+        }
+
+      }*/
 
     }
   
