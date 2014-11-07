@@ -5,7 +5,7 @@
 // Pull out diffusion parameters into uniforms, and allow them
 // to be passable!
 
-function CrystalCreator( renderer ){
+function CrystalCreator( renderer  , shader ){
 
 
   this.crystalizing = false;
@@ -13,8 +13,10 @@ function CrystalCreator( renderer ){
   this.size = 1024;
 
   this.normalMapper = new NormalMapper( this.size , renderer );
-  
-  this.ss = shaders.setValue( shaders.ss.diffusion , 'SIZE' , 1. / this.size );
+ 
+  var shader = shader || shaders.ss.diffusion;
+
+  this.ss = shaders.setValue( shader , 'SIZE' , 1. / this.size );
   
   this.simulation = new PhysicsRenderer( this.size , this.ss , renderer );
   this.clock = new THREE.Clock();
@@ -48,10 +50,7 @@ CrystalCreator.prototype.update = function(){
 
     this.simulation.update();
 
-    var o = this.simulation.output;
-    var d = this.depth;
-    var s = 1 / this.size;
-    this.normalMapper.createNormalMap( o , d , s );
+
 
   }
 
@@ -87,13 +86,12 @@ CrystalCreator.prototype.createSurroundingCrystals = function(){
 
 CrystalCreator.prototype.export = function(){
 
-  var normalMap = this.createNormal();
-  var timingMap = this.createTiming();
+  var normalMap = this.createNormalMap();
 
   var exports = { 
 
-    x:         this.x,
-    y:         this.y,
+   // x:         this.x,
+   // y:         this.y,
     normalMap: normalMap
 
   }
@@ -104,6 +102,11 @@ CrystalCreator.prototype.export = function(){
 
 
 CrystalCreator.prototype.createNormalMap = function(){
+
+    var o = this.simulation.output;
+    var d = this.depth;
+    var s = 1 / this.size;
+    this.normalMapper.createNormalMap( o , d , s );
 
 }
 

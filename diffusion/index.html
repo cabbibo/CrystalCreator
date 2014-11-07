@@ -57,10 +57,10 @@
     }
 
 
-    t_og      = l( '../img/seed.png'            , m , c );
+    t_og      = l( '../img/mssng.png'            , m , c );
     t_matcap  = l( '../img/rough-aluminium.jpg' , m , c );
     t_rainbow = l( '../img/rainbow.png'         , m , c );
-    t_block   = l( '../img/seed.png'            , m , c );
+    t_block   = l( '../img/logo.png'            , m , c );
 
     var audioController = new AudioController();
 
@@ -245,7 +245,7 @@
         console.log( lights.positions );
         console.log( lights.colors );
         normalPlane = new THREE.Mesh(
-          new THREE.PlaneGeometry( 100 , 100 , 1,1),
+          new THREE.PlaneGeometry( 100 , 100 , 100,100 ),
           new THREE.ShaderMaterial({
             uniforms:{
               t_normal: { type:"t" , value: normalMapper.output },
@@ -254,8 +254,8 @@
             },
             vertexShader: shaders.vs.output,
             fragmentShader: shaders.fs.output,
-            transparent: true,
-            blending: THREE.AdditiveBlending
+            //transparent: true,
+            //blending: THREE.AdditiveBlending
           })
         );
 

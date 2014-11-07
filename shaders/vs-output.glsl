@@ -14,7 +14,7 @@ void main(){
  
   float d = texture2D( t_normal , uv ).w;
   
-  vPos  = position + vec3( 0. , 0. , d * depth );
+  vPos  = position + vec3( 0. , 0. , d * 10.);
   vMVPos = (modelViewMatrix * vec4(vPos , 1. )).xyz; 
   vMPos  = (modelMatrix * vec4( vPos, 1. )).xyz; 
 
